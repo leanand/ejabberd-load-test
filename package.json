@@ -1,0 +1,11 @@
+{
+  "name": "ejabberd-load-test",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node app"
+  },
+  "dependencies": {
+    "underscore": "1.7.0",
+    "node-xmpp-client" :"latest"
+  }
+}
