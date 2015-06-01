@@ -27,13 +27,12 @@ function createEjabberd(jid, password){
 
 	ejabberdClient.on('online', function() {
 		ejabberdClient.send('<presence/>');
-		console.log("XMPP Client Connected");
+		console.log(instance_jid);
 		ejabberdClient.emit('xmpp:connected');
 	});
-
-	ejabberdClient.on('stanza', function(stanza) {
-		console.log('Incoming stanza: ', stanza.toString());
-	});
+	/*ejabberdClient.on('stanza', function(stanza) {
+		console.log('Incoming stanza: ', stanza.toString(), instance_jid);
+	}); */
 
 	ejabberdClient.on('error', function(error) {
 		console.log('error ', error);
@@ -41,5 +40,10 @@ function createEjabberd(jid, password){
 };
 
 for(i=1; i < 101 ; i++){
-	createEjabberd("34479d37b854612ec75f5cf195c9dbdd_agent_"+i+"@"+Config.host, "34479d37b854612ec75f5cf195c9dbdd");
+	(function(j){
+		setTimeout(function(){
+		createEjabberd("34479d37b854612ec75f5cf195c9dbdd_agent_"+j+"@"+Config.host, "34479d37b854612ec75f5cf195c9dbdd");
+	},100);	
+	}(i));
+	
 }
