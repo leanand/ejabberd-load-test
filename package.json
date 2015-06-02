@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "underscore": "1.7.0",
-    "node-xmpp-client" :"latest"
+    "node-xmpp-client" :"latest",
+    "ltx"   : "latest"
   }
 }
