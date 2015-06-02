@@ -2,6 +2,7 @@ var xmppClient = require('node-xmpp-client');
 var _ = require('underscore');
 var ltx = require('ltx');
 var sys = require("sys");
+fs = require('fs');
 
 var ejabberdClients = [];
 /*var stdin = process.openStdin();
@@ -12,6 +13,7 @@ stdin.addListener("data", function(d) {
     // with toString() and then substring() 
     console.log("you entered: [" + 
         d.toString().substring(0, d.length-1) + "]");
+    if(d  "connect")
   });*/
 
 var Constants = {
@@ -24,7 +26,7 @@ var Constants = {
 var Config = {
 	username : 'admin123123',
 	password : 'test',
-	host : 'localhost',
+	host : 'ejabberd',
 	bosh : 'http://localhost:5280/http-bind/'
 };
 
@@ -44,12 +46,23 @@ function createEjabberd(jid, password){
 
 createEjabberd.prototype.listeners = function(){
 	this.ejabberdClient.on('online', function() {
+		this.connected = true;
 		console.log(this.jid)
 		this.ejabberdClient.send('<presence/>');
-		//this.subscribe("presence-asdasdasdasdsadasdasdsad");
+		this.subscribe("presence-asdasdasdasdsadasdasdsad");
 	}.bind(this));
 	this.ejabberdClient.on('stanza', function(stanza) {
-		//console.log('Incoming stanza: ', stanza.toString(), this.jid);
+		if(stanza.name === 'iq' && stanza.attrs.id ==="idd"){
+			this.subscribeCallbackTime = new Date().getTime();
+			this.timeTaken = this.subscribeCallbackTime - this.subscribeTime;
+			console.log(this.timeTaken);
+			var Filed = this.user_id +","+ this.timeTaken + "\n";
+			fs.appendFile('sample.txt',Filed,function(err){
+				if(err){
+					console.log("error");
+				}
+			});
+		}
 	}.bind(this)); 
 
 	this.ejabberdClient.on('error', function(error) {
@@ -58,7 +71,6 @@ createEjabberd.prototype.listeners = function(){
 }
 
 createEjabberd.prototype.pushToChannel = function(channelName){
-	console.log("Pushinggggg")
 
 	var payload="testttttttt";
 	var stanza = new ltx.Element('iq',
@@ -73,7 +85,7 @@ createEjabberd.prototype.pushToChannel = function(channelName){
 };
 
 createEjabberd.prototype.subscribe = function(channelName){
-	console.log("Subscribinggggggg")
+	this.subscribeTime = new Date().getTime();
 	var stanza = new ltx.Element('iq',
 			{	from : this.jid,
 				to : this.host,
@@ -85,7 +97,6 @@ createEjabberd.prototype.subscribe = function(channelName){
 
 }
 createEjabberd.prototype.unsubscribe = function(channelName){
-	console.log("unSubscribinggggggg")
 
 	var stanza = new ltx.Element('iq',
 			{	from : this.jid,
@@ -98,6 +109,17 @@ createEjabberd.prototype.unsubscribe = function(channelName){
 			
 }
 
-for(i=0; i < 100000 ; i++){
-	ejabberdClients[i] = new createEjabberd("34479d37b854612ec75f5cf195c9dbdd_agent_"+i+"@"+Config.host, "34479d37b854612ec75f5cf195c9dbdd");
+connectEjabberd(0, 10000);
+
+function connectEjabberd(start, limit){
+	if(start > limit){
+		return;
+	}
+	for(i=start; i < limit ; i++){
+		if(!ejabberdClients[i] || !ejabberdClients[i].connected){
+			ejabberdClients[i] = new createEjabberd("34479d37b854612ec75f5cf195c9dbdd_agent_"+i+"@"+Config.host, "34479d37b854612ec75f5cf195c9dbdd");
+			ejabberdClients[i].user_id = i;
+		}
+	}
+
 }
