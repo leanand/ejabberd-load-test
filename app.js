@@ -60,7 +60,7 @@ createEjabberd.prototype.listeners = function(){
 			this.timeTaken = this.subscribeCallbackTime - this.subscribeTime;
 			this.connectedTimeTaken = this.connectedTime - this.startTime;
 			console.log(this.timeTaken);
-			var Filed = this.user_id +","+connectedTimeTaken+","+ this.timeTaken + "\n";
+			var Filed = this.user_id +","+this.connectedTimeTaken+","+ this.timeTaken + "\n";
 			fs.appendFile('test-case-'+limit,Filed,function(err){
 				if(err){
 					console.log("error");
