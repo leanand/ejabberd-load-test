@@ -5,6 +5,8 @@ var sys = require("sys");
 fs = require('fs');
 
 var ejabberdClients = [];
+var limit = process.argv[2];
+
 /*var stdin = process.openStdin();
 
 stdin.addListener("data", function(d) {
@@ -36,7 +38,7 @@ function createEjabberd(jid, password){
 	this.jid = jid;
 	this.pass = password;
 	this.host = Config.host;
-
+	this.startTime = new Date().getTime();
 	this.ejabberdClient = new xmppClient({
     	jid: this.jid,
     	password: this.pass
@@ -46,6 +48,7 @@ function createEjabberd(jid, password){
 
 createEjabberd.prototype.listeners = function(){
 	this.ejabberdClient.on('online', function() {
+		this.connectedTime = new Date().getTime();
 		this.connected = true;
 		console.log(this.jid)
 		this.ejabberdClient.send('<presence/>');
@@ -55,9 +58,10 @@ createEjabberd.prototype.listeners = function(){
 		if(stanza.name === 'iq' && stanza.attrs.id ==="idd"){
 			this.subscribeCallbackTime = new Date().getTime();
 			this.timeTaken = this.subscribeCallbackTime - this.subscribeTime;
+			this.connectedTimeTaken = this.connectedTime - this.startTime;
 			console.log(this.timeTaken);
-			var Filed = this.user_id +","+ this.timeTaken + "\n";
-			fs.appendFile('sample.txt',Filed,function(err){
+			var Filed = this.user_id +","+connectedTimeTaken+","+ this.timeTaken + "\n";
+			fs.appendFile('test-case-'+limit,Filed,function(err){
 				if(err){
 					console.log("error");
 				}
@@ -109,7 +113,7 @@ createEjabberd.prototype.unsubscribe = function(channelName){
 			
 }
 
-connectEjabberd(0, 10000);
+connectEjabberd(0, limit);
 
 function connectEjabberd(start, limit){
 	if(start > limit){
