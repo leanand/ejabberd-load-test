@@ -6,6 +6,9 @@ fs = require('fs');
 
 var ejabberdClients = [];
 var limit = process.argv[2];
+var timeInterval = process.argv[3];
+var clientConnected = 0;
+var clientSubscribed = 0;
 
 /*var stdin = process.openStdin();
 
@@ -44,19 +47,27 @@ function createEjabberd(jid, password){
     	password: this.pass
 	});
 	this.listeners();	
+	this.messageCounter = 0;
 };
 
 createEjabberd.prototype.listeners = function(){
 	this.ejabberdClient.on('online', function() {
+		clientConnected++;
 		this.connectedTime = new Date().getTime();
 		this.connected = true;
-		console.log(this.jid)
 		this.ejabberdClient.send('<presence/>');
 		this.subscribe("presence-asdasdasdasdsadasdasdsad");
+		console.log(clientConnected);
+		
 	}.bind(this));
 	this.ejabberdClient.on('stanza', function(stanza) {
 		if(stanza.name === 'iq' && stanza.attrs.id ==="idd"){
-			this.subscribeCallbackTime = new Date().getTime();
+			clientSubscribed++;
+			console.log("subs",clientSubscribed,limit);
+			if(clientSubscribed == limit){
+				pushMessages();
+			}
+			/*this.subscribeCallbackTime = new Date().getTime();
 			this.timeTaken = this.subscribeCallbackTime - this.subscribeTime;
 			this.connectedTimeTaken = this.connectedTime - this.startTime;
 			console.log(this.timeTaken);
@@ -65,7 +76,22 @@ createEjabberd.prototype.listeners = function(){
 				if(err){
 					console.log("error");
 				}
-			});
+			});*/
+			
+		}else{
+			if(stanza.name ==="message" && stanza.children[0].nodeName === "livechat_Event"){
+				this.messageCounter++;
+				this.messageReceivedTime = new Date().getTime();
+				this.messageSentTime = stanza.children[0].children[0];
+				var timeDiff = this.messageReceivedTime - this.messageSentTime;
+				var Filed = this.user_id +","+this.messageCounter+","+ timeDiff + "\n";
+				console.log(Filed);
+				fs.appendFile('test-case-message'+limit,Filed,function(err){
+					if(err){
+						console.log("error");
+					}
+				});
+			}
 		}
 	}.bind(this)); 
 
@@ -76,14 +102,15 @@ createEjabberd.prototype.listeners = function(){
 
 createEjabberd.prototype.pushToChannel = function(channelName){
 
-	var payload="testttttttt";
+	var payload=new Date().getTime();
+
 	var stanza = new ltx.Element('iq',
 			{	from : this.jid,
 				to : this.host,
 				type : 'set',
 				id : "idd" })
 			.c('publish',{xmlns : Constants.PUBSUB , to : channelName } )
-			.c('livechat_Event',{type : eventType})
+			.c('livechat_Event',{type : "test"})
 			.t(JSON.stringify(payload));
 	this.ejabberdClient.send(stanza.tree());	
 };
@@ -124,6 +151,13 @@ function connectEjabberd(start, limit){
 			ejabberdClients[i] = new createEjabberd("34479d37b854612ec75f5cf195c9dbdd_agent_"+i+"@"+Config.host, "34479d37b854612ec75f5cf195c9dbdd");
 			ejabberdClients[i].user_id = i;
 		}
+		
 	}
 
+}
+
+function pushMessages(){
+	setInterval(function(){
+		ejabberdClients[0].pushToChannel("presence-asdasdasdasdsadasdasdsad");
+	},timeInterval);
 }
